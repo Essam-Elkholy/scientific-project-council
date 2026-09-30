@@ -21,8 +21,9 @@ def archive_content(path):
 
 def package_bytes():
     buffer = BytesIO()
-    files = sorted(p for p in SKILL.rglob("*") if p.is_file()
-                   and "__pycache__" not in p.parts and p.suffix not in {".pyc", ".pyo"})
+    files = sorted((p for p in SKILL.rglob("*") if p.is_file()
+                    and "__pycache__" not in p.parts and p.suffix not in {".pyc", ".pyo"}),
+                   key=lambda p: p.relative_to(SKILL.parent).as_posix())
     with ZipFile(buffer, "w", compression=ZIP_STORED) as archive:
         for path in files:
             if path.is_symlink():

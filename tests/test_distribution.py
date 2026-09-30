@@ -25,6 +25,7 @@ class DistributionTests(unittest.TestCase):
                      and p.suffix not in {".pyc", ".pyo"}]
             expected = {p.relative_to(SKILL.parent).as_posix(): builder.archive_content(p) for p in files}
             self.assertEqual(set(archive.namelist()), set(expected))
+            self.assertEqual(archive.namelist(), sorted(archive.namelist()))
             for name, content in expected.items():
                 self.assertEqual(archive.read(name), content)
             self.assertIsNone(archive.testzip())
