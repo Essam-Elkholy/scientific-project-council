@@ -17,6 +17,12 @@ Reports use readable paragraphs and useful headings. They omit administrative fi
 
 When separate agents are available, reviewers run in fresh contexts. Otherwise, the skill completes the five stages in one conversation and clearly labels the judgment **SINGLE-CONTEXT REVIEW**. You can request **STRICT INDEPENDENT** if separate reviewer contexts are essential.
 
+## Get started in Codex
+
+Download [scientific-project-council.skill](scientific-project-council.skill) and give Codex access to the downloaded file. Ask: **"Install Scientific Project Council from this file for me."** Codex can unpack and install the skill; you do not need to type terminal commands.
+
+Once installed, start your next message with **`$scientific-project-council`**, followed by your project idea.
+
 ## Get started in Claude
 
 1. Download [scientific-project-council.skill](scientific-project-council.skill).
