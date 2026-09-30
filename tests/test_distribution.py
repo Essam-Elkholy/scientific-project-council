@@ -5,6 +5,9 @@ from io import BytesIO
 from pathlib import Path
 import re
 import unittest
+import shutil
+import uuid
+from unittest.mock import patch
 from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,7 +23,7 @@ class DistributionTests(unittest.TestCase):
         with ZipFile(BytesIO(builder.package_bytes())) as archive:
             files = [p for p in SKILL.rglob("*") if p.is_file() and "__pycache__" not in p.parts
                      and p.suffix not in {".pyc", ".pyo"}]
-            expected = {p.relative_to(SKILL.parent).as_posix(): p.read_bytes() for p in files}
+            expected = {p.relative_to(SKILL.parent).as_posix(): builder.archive_content(p) for p in files}
             self.assertEqual(set(archive.namelist()), set(expected))
             for name, content in expected.items():
                 self.assertEqual(archive.read(name), content)
@@ -59,6 +62,30 @@ class DistributionTests(unittest.TestCase):
                 parts = Path(name).parts
                 for excluded in ("scientific-council", "tests", "__pycache__", ".github"):
                     self.assertNotIn(excluded, parts)
+
+    def test_lf_and_crlf_checkouts_produce_identical_archives(self):
+        scratch = ROOT / "tests" / ".test-runs"
+        work = scratch / ("package-" + uuid.uuid4().hex)
+        skill = work / "scientific-project-council"
+        skill.mkdir(parents=True)
+        try:
+            text_file = skill / "SKILL.md"
+            asset = skill / "sample.bin"
+            binary = b"\x00\xff\r\n\x80"
+            asset.write_bytes(binary)
+            with patch.object(builder, "SKILL", skill):
+                text_file.write_bytes(b"name: council\nreview: evidence\n")
+                lf_archive = builder.package_bytes()
+                text_file.write_bytes(b"name: council\r\nreview: evidence\r\n")
+                self.assertEqual(lf_archive, builder.package_bytes())
+            with ZipFile(BytesIO(lf_archive)) as archive:
+                self.assertEqual(archive.read("scientific-project-council/SKILL.md"),
+                                 b"name: council\nreview: evidence\n")
+                self.assertEqual(archive.read("scientific-project-council/sample.bin"), binary)
+        finally:
+            if work.resolve().parent != scratch.resolve():
+                raise RuntimeError("Test cleanup path escaped its workspace")
+            shutil.rmtree(work)
 
     def test_builder_has_no_timestamp_variation(self):
         self.assertEqual(builder.package_bytes(), builder.package_bytes())

@@ -11,6 +11,14 @@ SKILL = ROOT / "skills/scientific-project-council"
 OUTPUT = ROOT / "scientific-project-council.skill"
 
 
+def archive_content(path):
+    """Use Git's LF representation for skill text; preserve binary assets."""
+    content = path.read_bytes()
+    if path.suffix in {".md", ".py"} or path.name == "LICENSE":
+        content = content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return content
+
+
 def package_bytes():
     buffer = BytesIO()
     files = sorted(p for p in SKILL.rglob("*") if p.is_file()
@@ -23,7 +31,7 @@ def package_bytes():
             info.create_system = 3
             info.external_attr = 0o100644 << 16
             # No compression avoids zlib-version differences between platforms.
-            archive.writestr(info, path.read_bytes())
+            archive.writestr(info, archive_content(path))
     return buffer.getvalue()
 
 
