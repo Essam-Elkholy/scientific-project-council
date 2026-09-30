@@ -1,0 +1,9 @@
+# Local council transcripts and evidence belong to the student workspace.
+scientific-council/
+**/__pycache__/
+*.py[cod]
+tests/.test-runs/
+.venv/
+.pytest_cache/
+.DS_Store
+Thumbs.db
